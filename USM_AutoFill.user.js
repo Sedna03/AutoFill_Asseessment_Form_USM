@@ -1,55 +1,64 @@
 // ==UserScript==
 // @name         USM Evaluation Auto-Filler
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  Automatically fills USM course evaluations
 // @author       Your Name
 // @match        *://appselearn.usm.my/PenilaianPengajaranV3/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=usm.my
 // @grant        none
+// @run-at       document-end
+// @noframes     false
 // ==/UserScript==
 
 (function() {
     'use strict';
 
     function createButton() {
+        // If button exists, don't create another
         if (document.getElementById("usm-auto-btn")) return;
 
         const btn = document.createElement("button");
         btn.id = "usm-auto-btn";
         btn.innerHTML = "🚀 AUTO-FILL ALL";
         
-        // Advanced styling to ensure it stays visible on the USM theme
         btn.style.cssText = `
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 999999;
-            padding: 20px;
-            background-color: #ff0055;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2147483647;
+            padding: 15px 25px;
+            background-color: #7b2cbf;
             color: white;
-            border: 3px solid white;
-            border-radius: 50px;
+            border: 2px solid #ffffff;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 16px;
-            box-shadow: 0px 10px 20px rgba(0,0,0,0.5);
+            font-size: 14px;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.4);
+            display: block !important;
         `;
 
         btn.onclick = (e) => {
             e.preventDefault();
+            // This looks for all radio buttons with value 5
             const radios = document.querySelectorAll('input[type="radio"][value="5"]');
+            if (radios.length === 0) {
+                alert("No radio buttons found. Are you on the evaluation page?");
+                return;
+            }
             radios.forEach(radio => {
+                radio.click(); // Using click() is better for triggering site logic
                 radio.checked = true;
-                // Trigger change event in case the site uses validation
-                radio.dispatchEvent(new Event('change', { bubbles: true }));
             });
-            alert("Done! All items set to 'Strongly Agree'. Please check before submitting.");
+            alert(`Success! Selected ${radios.length} items.`);
         };
 
-        document.body.appendChild(btn);
+        // Append to body or the document element
+        (document.body || document.documentElement).appendChild(btn);
     }
 
-    // Run multiple times to catch the form if it loads slowly
-    setTimeout(createButton, 1000);
-    setTimeout(createButton, 3000);
+    // Try to create the button immediately and then every 2 seconds (in case of slow loading)
+    createButton();
+    setInterval(createButton, 2000);
 })();
